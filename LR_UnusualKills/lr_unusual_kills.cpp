@@ -122,6 +122,7 @@ void LoadSettings()
 	if (!hKv->LoadFromFile(g_pFullFileSystem, pszPath))
 	{
 		Warning("Failed to load %s\n", pszPath);
+		delete hKv;
 		return;
 	}
 
@@ -132,16 +133,25 @@ void LoadSettings()
 	g_iExpMode = hKv->GetInt("Exp_Mode", 1);
 
 	KeyValues* pKVTypeKills = hKv->FindKey("TypeKills", false);
+	if (!pKVTypeKills)
+	{
+		Warning("%s has no TypeKills section\n", pszPath);
+		delete hKv;
+		return;
+	}
 	FOR_EACH_SUBKEY(pKVTypeKills, pKey)
 	{
 		const char *pszName = pKey->GetName();
-		int iUKType = iUKSymbolTypes[(pszName[0] | 32) - 97];
+		// The first letter picks the kill type; anything outside a-v used to read past the table
+		int iLetter = (pszName[0] | 32) - 97;
+		int iUKType = iLetter >= 0 && iLetter < (int)(sizeof(iUKSymbolTypes) / sizeof(iUKSymbolTypes[0])) ? iUKSymbolTypes[iLetter] : 127;
 		switch(iUKType)
 		{
 			case 127:
 			{
-				Msg("%s: \"LR_UnusualKills\" -> \"Settings\" -> \"TypeKills\" -> \"%s\" - invalid selection\n", pszPath, sBuffer);
-				break;
+				Msg("%s: \"LR_UnusualKills\" -> \"TypeKills\" -> \"%s\" - invalid selection\n", pszPath, pszName);
+				// skip it, g_iExp[127] used to write past the array
+				continue;
 			}
 
 			case 8:
@@ -158,6 +168,7 @@ void LoadSettings()
 		}
 		g_iExp[iUKType] = g_iExpMode > 0 ? pKey->GetInt("exp") : 0;
 	}
+	delete hKv;
 }
 
 bool lr_unusual_kills::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)

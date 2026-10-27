@@ -4,9 +4,9 @@
 class CGameEntitySystem;
 
 #include <ISmmPlugin.h>
-#include <sh_vector.h>
+#include <engine2/ivengineserver2.h>
+#include <engine2/isource2server.h>
 #include "ehandle.h"
-#include <iserver.h>
 #include <entity2/entitysystem.h>
 #include "igameevents.h"
 #include "entitysystem.h"

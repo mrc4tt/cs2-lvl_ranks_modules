@@ -48,6 +48,7 @@ void LoadSettings()
 	if (!hKv->LoadFromFile(g_pFullFileSystem, pszPath))
 	{
 		Warning("Failed to load %s\n", pszPath);
+		delete hKv;
 		return;
 	}
 
@@ -56,12 +57,22 @@ void LoadSettings()
 
 	FOR_EACH_SUBKEY(hKv, pKey)
 	{
+		// "weapon_coefficient" is a plain value, only sections are weapons
+		if (!pKey->GetFirstSubKey())
+			continue;
+		// g_sWeaponsClassName holds 96 weapons, more used to write past it
+		if (g_iCountWeapons >= (int)(sizeof(g_sWeaponsClassName) / sizeof(g_sWeaponsClassName[0])))
+		{
+			Warning("%s: more than %d weapons, the rest is ignored\n", pszPath, g_iCountWeapons);
+			break;
+		}
 		g_SMAPI->Format(g_sWeaponsClassName[g_iCountWeapons], sizeof(g_sWeaponsClassName[g_iCountWeapons]), pKey->GetName());
 		WeaponsData hData;
 		hData.sName = pKey->GetString("name");
 		hData.fCoefficient = pKey->GetFloat("coefficient", 1.0);
 		g_hWeapons[g_sWeaponsClassName[g_iCountWeapons++]] = hData;
 	}
+	delete hKv;
 }
 
 void SaveDataPlayer(int iClient, int weapon = -1)

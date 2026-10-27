@@ -5,13 +5,13 @@
 #include <igameevents.h>
 #include "utlvector.h"
 #include "ehandle.h"
-#include <sh_vector.h>
+#include <engine2/ivengineserver2.h>
+#include <engine2/isource2server.h>
 #include <entity2/entitysystem.h>
 #include "inetchannelinfo.h"
 #include "utils.hpp"
 #include "CCSPlayerController.h"
 class CCSGameRules;
-#include "iserver.h"
 #include "include/lvl_ranks.h"
 #include "include/menus.h"
 #include "include/players.h"

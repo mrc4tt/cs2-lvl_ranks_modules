@@ -1,0 +1,49 @@
+"Phrases"
+{
+	// %d = experience now, %s = the change (+2)
+	"OP"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a one shot kill]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство с одного выстрела]"
+	}
+	"Penetrated"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a kill through a wall]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство через стену]"
+	}
+	"NoScope"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a no scope kill]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство без прицела]"
+	}
+	"Run"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a kill on the run]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство в беге]"
+	}
+	"Jump"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a kill in the air]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство в прыжке]"
+	}
+	"Flash"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a kill while flashed]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство ослеплённым]"
+	}
+	"Smoke"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a kill through smoke]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство через дым]"
+	}
+	"LastClip"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a kill with the last bullet]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство последним патроном]"
+	}
+	"Distance"
+	{
+		"en"		"Your experience: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} for a long distance kill]"
+		"ru"		"Ваш опыт: {GREEN}%d{DEFAULT} [{GREEN}%s{DEFAULT} за убийство издалека]"
+	}
+}

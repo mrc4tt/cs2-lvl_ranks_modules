@@ -1,76 +1,26 @@
-# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-class ProtocHeadersOnlyTool(object):
-  def evaluate(self, cmd):
-    gen_map = cmd.data.protoc.Generate(builder = cmd.context,
-                                       sources = cmd.data.sources,
-                                       outputs = [('cpp', cmd.localFolderNode)])
-    cmd.sourcedeps += gen_map['cpp']['sources']
-    cmd.sourcedeps += gen_map['cpp']['headers']
-    for source in gen_map['cpp']['sources']:
-      if os.path.basename(source.path) in cmd.data.compile_only:
-        cmd.sources += [os.path.join(cmd.context.buildPath, source.path)]
+# libmaxminddb is built from third_party/ instead of linking the system's libmaxminddb.a,
+# so the module builds the same in every build container and on Windows.
+mmdb_path = os.path.join(builder.sourcePath, 'third_party', 'libmaxminddb')
 
-# Only headers are generated (SDK headers include them), no .pb.cc is compiled unless listed in compile_only
-class ProtocHeadersOnlyJob(object):
-  def __init__(self, protoc, sources, compile_only):
-    self.protoc = protoc.clone()
-    self.sources = sources[:]
-    self.compile_only = set(compile_only)
-    self.tool = ProtocHeadersOnlyTool()
-
-
-# Here only one sdk should be available to generate only one executable in the end,
-# as multi-sdk loading isn't supported out of the box by metamod, and would require specifying the full path in the vdf
-# which in the end would ruin the multi-platform (unix, win etc) loading by metamod as it won't be able to append platform specific extension
-# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python: 
-import os
-
-# Here only one sdk should be available to generate only one executable in the end,
-# as multi-sdk loading isn't supported out of the box by metamod, and would require specifying the full path in the vdf
-# which in the end would ruin the multi-platform (unix, win etc) loading by metamod as it won't be able to append platform specific extension
-# so just fall back to the single binary.
-# Multi-sdk solutions should be manually loaded with a custom plugin loader (examples being sourcemod, stripper:source)
 for sdk_target in MMSPlugin.sdk_targets:
-    sdk = sdk_target.sdk
-    cxx = sdk_target.cxx
+  lib = sdk_target.cxx.StaticLibrary('maxminddb')
+  lib.compiler.includes += [mmdb_path]
+  lib.compiler.defines += ['PACKAGE_VERSION="1.14.1"']
+  if lib.compiler.like('gcc'):
+    lib.compiler.cflags += ['-Wno-error']
+  else:
+    lib.compiler.defines += ['_CRT_SECURE_NO_WARNINGS']
+  lib.sources += [
+    os.path.join(mmdb_path, 'maxminddb.c'),
+    os.path.join(mmdb_path, 'data-pool.c'),
+  ]
+  lib_nodes = builder.Add(lib)
 
-    if cxx.target.platform == 'linux':
-      cxx.defines += [
-        'bswap_16=__builtin_bswap16',
-        'bswap_32=__builtin_bswap32',
-        'bswap_64=__builtin_bswap64',
-      ]
-    cxx.cxxflags += ['-Wno-invalid-offsetof']
-    binary = MMSPlugin.HL2Library(builder, cxx, MMSPlugin.plugin_name, sdk)
-
-    proto_dir = os.path.join(sdk['path'], 'thirdparty', 'game_protobufs', 'csgo')
-    binary.custom = [ProtocHeadersOnlyJob(sdk_target.protoc, [
-      os.path.join(proto_dir, f) for f in [
-        'valveextensions.proto',
-        'network_connection.proto',
-        'networkbasetypes.proto',
-        'netmessages.proto',
-        'source2_steam_stats.proto',
-      ]
-    ], [])]
-    
-    binary.compiler.cxxincludes += [
-      os.path.join(builder.sourcePath, 'include'),
-    ]
-    if binary.compiler.target.platform == 'linux':
-      binary.compiler.postlink += [
-      '/usr/lib/x86_64-linux-gnu/libmaxminddb.a'
-    ]
-
-    binary.sources += [
-      'lr_geoip.cpp'
-    ]
-    if cxx.target.arch == 'x86':
-      binary.sources += ['sourcehook/sourcehook_hookmangen.cpp']
-    nodes = builder.Add(binary)
-    MMSPlugin.binaries += [nodes]
-    
-
-
+  libs = [lib_nodes]
+  if sdk_target.cxx.target.platform == 'windows':
+    libs += ['ws2_32.lib']
+  MMSPlugin.Module(builder, sdk_target, 'lr_geoip', ['lr_geoip.cpp'],
+                   includes = [mmdb_path], libs = libs)

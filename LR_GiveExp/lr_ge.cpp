@@ -31,6 +31,10 @@ std::string ConvertSteamID(const char* usteamid) {
 
     std::string steamid_parts[3] = { "STEAM_1:", "", "" };
 
+    // "BOT" and other IDs that are not [U:1:N]
+    if (usteamid_split.size() < 3 || !std::isdigit(usteamid_split[2][0]))
+        return std::string();
+
     int z = std::stoi(usteamid_split[2]);
 
     if (z % 2 == 0) {
@@ -54,7 +58,16 @@ bool containsOnlyDigits(const std::string &str)
     auto start = str.begin();
     if (*start == '-') ++start;
 
-    return std::all_of(start, str.end(), [](char c) { return std::isdigit(c); });
+    // "-" alone used to pass and crash std::stoi
+    return start != str.end() && std::all_of(start, str.end(), [](char c) { return std::isdigit(c); });
+}
+
+// STEAM_X:Y:Z. The SteamID goes into an SQL query, so nothing else may pass.
+bool IsSteamID2(const char *psz)
+{
+	if (strncmp(psz, "STEAM_", 6) || !std::isdigit(psz[6]) || psz[7] != ':' || (psz[8] != '0' && psz[8] != '1') || psz[9] != ':')
+		return false;
+	return psz[10] && strlen(psz + 10) <= 10 && containsOnlyDigits(psz + 10) && psz[10] != '-';
 }
 
 bool lr_ge::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -85,9 +98,10 @@ CON_COMMAND_EXTERN(lr_giveexp, OnGiveExp, "");
 void OnGiveExp(const CCommandContext& context, const CCommand& args)
 {
 	auto slot = context.GetPlayerSlot();
-	if (args.ArgC() > 2 && args[1][0] && args[2][0] && containsOnlyDigits(args[2]))
+	if (args.ArgC() > 2 && IsSteamID2(args[1]) && containsOnlyDigits(args[2]))
 	{
-		int iCount = std::stoi(args[2]);
+		// atoi: std::stoi throws (and takes the server down) on a number out of int range
+		int iCount = atoi(args[2]);
 		
 		for (int i = 0; i < 64; i++)
 		{

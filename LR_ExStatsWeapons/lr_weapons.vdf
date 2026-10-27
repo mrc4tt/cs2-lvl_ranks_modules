@@ -1,0 +1,5 @@
+"Metamod Plugin"
+{
+	"alias"	"lr_weapons"
+	"file"	"addons/levels_ranks/modules/lr_weapons"
+}

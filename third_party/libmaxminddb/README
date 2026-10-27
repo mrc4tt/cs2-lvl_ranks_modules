@@ -1,0 +1,2 @@
+libmaxminddb 1.14.1 (https://github.com/maxmind/libmaxminddb), Apache License 2.0.
+Only the library sources; maxminddb_config.h is written for this build.

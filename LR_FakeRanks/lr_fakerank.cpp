@@ -2,7 +2,7 @@
 #include <convar.h>
 #include <networksystem/inetworkserializer.h>
 #include <networksystem/inetworkmessages.h>
-#include <inetchannel.h>
+#include <networksystem/inetchannel.h>
 #include "schemasystem/schemasystem.h"
 #include "cstrike15_usermessages.pb.h"
 
@@ -43,6 +43,7 @@ void LoadConfig()
 		if (!hKv->LoadFromFile(g_pFullFileSystem, pszPath))
 		{
 			Warning("Failed to load %s\n", pszPath);
+			delete hKv;
 			return;
 		}
 
@@ -74,11 +75,18 @@ void LoadConfig()
 			break;
 		}
 		}
-		hKv = hKv->FindKey("FakeRank", false);
-		FOR_EACH_VALUE(hKv, pValue)
+		// A missing FakeRank section used to crash here, and the root was never freed.
+		// atoi: std::stoi throws on a key that is not a number and takes the server down.
+		KeyValues *pRanks = hKv->FindKey("FakeRank", false);
+		if (pRanks)
 		{
-			g_Ranks[std::stoi(pValue->GetName())] = pValue->GetInt(nullptr);
+			FOR_EACH_VALUE(pRanks, pValue)
+			{
+				g_Ranks[atoi(pValue->GetName())] = pValue->GetInt(nullptr);
+			}
 		}
+		else
+			Warning("[LR-FR] %s has no FakeRank section\n", pszPath);
 		delete hKv;
 	}
 }
@@ -166,6 +174,8 @@ void LR_FakeRank::GameFrame_Hook(bool simulating, bool bFirstTick, bool bLastTic
 	if(iCount > 0)
 	{
 		INetworkMessageInternal *netmsg = g_pNetworkMessages->FindNetworkMessagePartial("CCSUsrMsg_ServerRankRevealAll");
+		if (!netmsg)
+			return;
 		CNetMessage *msg = netmsg->AllocateMessage();
 		g_pGameEventSystem->PostEventAbstract(-1, false, ABSOLUTE_PLAYER_LIMIT, reinterpret_cast<const uint64*>(filter.Base()), netmsg, msg, 0, NetChannelBufType_t::BUF_RELIABLE);
 		delete msg;

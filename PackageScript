@@ -1,0 +1,27 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python:
+import os
+
+builder.SetBuildFolder('package')
+
+# One folder per module, each with its own addons/ tree, so every module ships as
+# its own archive. Classic Metamod layout: the binary in addons/levels_ranks/modules/
+# and a .vdf in addons/metamod/. It loads with every Game Utils version, and the
+# Game Utils autoload (1.9.2+) skips an old addons/plugins/lr/<name> copy because
+# a hand-written vdf with the same name loads it already.
+for module, name, nodes in MMSPlugin.modules:
+  addons = os.path.join(module, 'addons')
+  bin_folder = builder.AddFolder(os.path.join(addons, 'levels_ranks', 'modules'))
+  builder.AddCopy(nodes.binary, bin_folder)
+
+  metamod_folder = builder.AddFolder(os.path.join(addons, 'metamod'))
+  builder.AddCopy(os.path.join(builder.sourcePath, module, name + '.vdf'), metamod_folder)
+
+  # Example configs and translations kept in the module folder.
+  for src, dest in [('configs', os.path.join('configs', 'levels_ranks')),
+                    ('translations', 'translations')]:
+    src_dir = os.path.join(builder.sourcePath, module, src)
+    if not os.path.isdir(src_dir):
+      continue
+    folder = builder.AddFolder(os.path.join(addons, dest))
+    for f in sorted(os.listdir(src_dir)):
+      builder.AddCopy(os.path.join(src_dir, f), folder)
