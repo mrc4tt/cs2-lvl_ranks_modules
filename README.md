@@ -12,9 +12,9 @@ Every module has its own file, so take only the modules you want.
 
 | Your server | File |
 |---|---|
-| Linux (most servers) | `<module>-<version>-steamrt3.tar.gz` |
-| Linux, running Steam Runtime 4 | `<module>-<version>-steamrt4.tar.gz` (the steamrt3 file works too) |
-| Windows | `<module>-<version>-windows.zip` |
+| Linux (most servers) | `<module>-steamrt3.zip` |
+| Linux, running Steam Runtime 4 | `<module>-steamrt4.zip` (the steamrt3 file works too) |
+| Windows | `<module>-windows.zip` |
 
 Not sure? Take **steamrt3**. It works on every Linux CS2 server.
 
